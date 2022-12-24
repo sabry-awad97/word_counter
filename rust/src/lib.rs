@@ -5,9 +5,9 @@ use std::io;
 #[derive(Debug)]
 // Define a public struct called Config
 pub struct Config {
-    count_lines: bool,
-    count_bytes: bool,
-    count_runes: bool,
+    pub count_lines: bool,
+    pub count_bytes: bool,
+    pub count_runes: bool,
 }
 
 // Create a Result to represent an Ok value for any type T or some Err value that implements the Error trait
@@ -36,8 +36,8 @@ pub fn get_args() -> MainResult<Config> {
     })
 }
 
-pub fn count(input: &str, count_lines: bool, count_bytes: bool, count_runes: bool) -> usize {
-    match (count_lines, count_bytes, count_runes) {
+pub fn count(input: &str, config: Config) -> usize {
+    match (config.count_lines, config.count_bytes, config.count_runes) {
         (true, false, false) => input.lines().count(),
         (false, true, false) => input.bytes().count(),
         (false, false, true) => input.chars().count(),
@@ -52,12 +52,7 @@ pub fn run(config: Config) -> MainResult<()> {
     io::Read::read_to_string(&mut io::stdin(), &mut input).unwrap();
 
     // Count the number of lines, bytes, runes, or words in the input
-    let count = count(
-        &input,
-        config.count_lines,
-        config.count_bytes,
-        config.count_runes,
-    );
+    let count = count(&input, config);
 
     // Print the final count value
     println!("{}", count);
