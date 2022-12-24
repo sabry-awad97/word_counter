@@ -52,12 +52,6 @@ fn count_bytes<R: Read>(reader: &mut R) -> usize {
     reader.bytes().count()
 }
 
-// fn count_runes<R: Read>(reader: &mut R) -> usize {
-//     let mut contents = String::new();
-//     reader.read_to_string(&mut contents).unwrap();
-//     contents.chars().count()
-// }
-
 fn count_runes<R: Read>(reader: &mut R) -> usize {
     let mut reader = BufReader::new(reader);
     let mut count = 0;
@@ -87,16 +81,6 @@ fn count_words<R: Read>(reader: &mut R) -> usize {
     }
     counter
 }
-
-// fn count_words<R: Read>(reader: &mut R) -> usize {
-//     let reader = BufReader::new(reader);
-//     let mut counter = 0;
-//     for _ in reader.split(b' ') {
-//         counter += 1;
-//     }
-//     counter
-// }
-
 
 pub fn count<R: Read>(reader: &mut R, config: Config) -> usize {
     match (config.count_lines, config.count_bytes, config.count_runes) {
