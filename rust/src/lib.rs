@@ -39,13 +39,13 @@ fn count_bytes<R: Read>(reader: &mut R) -> usize {
 }
 
 fn count_runes<R: Read>(reader: &mut R) -> usize {
-    let mut reader = BufReader::new(reader);
     let mut count = 0;
-    let mut buffer = Vec::new();
-    while reader.read_until(b'\n', &mut buffer).unwrap() > 0 {
-        let line = String::from_utf8(buffer.clone()).unwrap();
-        count += line.chars().count();
-        buffer.clear();
+    let mut buffer = [0; 1024];
+    while let Ok(n) = reader.read(&mut buffer) {
+        if n == 0 {
+            break;
+        }
+        count += buffer[..n].iter().filter(|&&b| b < 128).count();
     }
     count
 }
