@@ -1,4 +1,5 @@
 use clap::{App, Arg};
+use regex::Regex;
 use std::error::Error;
 use std::io::prelude::*;
 use std::io::{self, BufReader};
@@ -49,22 +50,11 @@ fn count_runes<R: Read>(reader: &mut R) -> usize {
     count
 }
 
-fn count_words<R: Read>(reader: &mut R) -> usize {
-    let reader = BufReader::new(reader);
-    let mut counter = 0;
-    let mut in_word = false;
-    for ch in reader.bytes().map(|b| b.unwrap() as char) {
-        match ch {
-            c if c.is_whitespace() => in_word = false,
-            _ => {
-                if !in_word {
-                    counter += 1;
-                    in_word = true;
-                }
-            }
-        }
-    }
-    counter
+pub fn count_words<R: Read>(reader: &mut R) -> usize {
+    let mut buffer = String::new();
+    reader.read_to_string(&mut buffer).unwrap();
+    let re = Regex::new(r"\b\w+\b").unwrap();
+    re.find_iter(&buffer).count()
 }
 
 pub fn count<R: Read>(reader: &mut R, config: Config) -> usize {
