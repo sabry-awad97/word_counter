@@ -1,5 +1,7 @@
+use word_counter::{get_args, run};
+
 fn main() {
-    if let Err(e) = word_counter::get_args().and_then(word_counter::run) {
+    if let Err(e) = get_args().and_then(run) {
         // error print line
         eprintln!("{}", e);
 
