@@ -3,6 +3,7 @@ use regex::Regex;
 use std::error::Error;
 use std::io::prelude::*;
 use std::io::{self, BufReader};
+use std::str;
 
 #[derive(Debug)]
 // Define a public struct called Config
@@ -45,7 +46,8 @@ fn count_runes<R: Read>(reader: &mut R) -> usize {
         if n == 0 {
             break;
         }
-        count += buffer[..n].iter().filter(|&&b| b < 128).count();
+        let s = str::from_utf8(&buffer[..n]).unwrap();
+        count += s.chars().count();
     }
     count
 }
