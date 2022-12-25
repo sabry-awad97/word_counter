@@ -1,44 +1,79 @@
+use std::io::{BufReader, Cursor};
+
+fn create_buf_reader(input: &str) -> BufReader<Cursor<Vec<u8>>> {
+    let cursor = Cursor::new(input.as_bytes().to_vec());
+    BufReader::new(cursor)
+}
+
 #[test]
 fn test_count_lines() {
-    let input = "Line 1\nLine 2\nLine 3";
+    // Arrange
+    let input = "line 1\nline 2\nline 3\n";
+    let expected = 3;
     let config = word_counter::Config {
         count_lines: true,
         count_bytes: false,
         count_runes: false,
     };
 
-    assert_eq!(word_counter::count(input, config), 3);
+    // Act
+    let mut reader = create_buf_reader(&input.to_owned());
+    let count = word_counter::count(&mut reader, config);
+
+    // Assert
+    assert_eq!(count, expected);
 }
 
 #[test]
 fn test_count_bytes() {
-    let input = "Hello, world!";
+    let input = "Hello 世界!'";
+    let expected = 14;
     let config = word_counter::Config {
         count_lines: false,
         count_bytes: true,
         count_runes: false,
     };
-    assert_eq!(word_counter::count(input, config), 13);
+
+    // Act
+    let mut reader = create_buf_reader(&input.to_owned());
+    let count = word_counter::count(&mut reader, config);
+
+    // Assert
+    assert_eq!(count, expected);
 }
 
 #[test]
 fn test_count_runes() {
-    let input = "Hello, 世界！";
+    let input = "Hello 世界!'";
+    let expected = 10;
     let config = word_counter::Config {
         count_lines: false,
         count_bytes: false,
         count_runes: true,
     };
-    assert_eq!(word_counter::count(input, config), 10);
+
+    // Act
+    let mut reader = create_buf_reader(&input.to_owned());
+    let count = word_counter::count(&mut reader, config);
+
+    // Assert
+    assert_eq!(count, expected);
 }
 
 #[test]
 fn test_count_words() {
     let input = "This is a test";
+    let expected = 4;
     let config = word_counter::Config {
         count_lines: false,
         count_bytes: false,
         count_runes: false,
     };
-    assert_eq!(word_counter::count(input, config), 4);
+
+    // Act
+    let mut reader = create_buf_reader(&input.to_owned());
+    let count = word_counter::count(&mut reader, config);
+
+    // Assert
+    assert_eq!(count, expected);
 }

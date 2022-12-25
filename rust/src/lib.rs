@@ -1,7 +1,7 @@
 use clap::{App, Arg};
 use std::error::Error;
-use std::io::{self, BufReader};
 use std::io::prelude::*;
+use std::io::{self, BufReader};
 
 #[derive(Debug)]
 // Define a public struct called Config
@@ -29,23 +29,8 @@ pub fn get_args() -> MainResult<Config> {
 }
 
 fn count_lines<R: Read>(reader: &mut R) -> usize {
-    let mut counter = 0;
-    let mut buffer = [0; 64];
-
-    loop {
-        let n = reader.read(&mut buffer).unwrap();
-        if n == 0 {
-            break;
-        }
-
-        for &b in &buffer[..n] {
-            if b == b'\n' {
-                counter += 1;
-            }
-        }
-    }
-
-    counter
+    let reader = BufReader::new(reader);
+    reader.lines().count()
 }
 
 fn count_bytes<R: Read>(reader: &mut R) -> usize {
