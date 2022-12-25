@@ -1,16 +1,17 @@
 use clap::{App, Arg};
 use regex::Regex;
-use std::error::Error;
-use std::io::prelude::*;
-use std::io::{self, BufReader};
-use std::str;
+use std::{
+    error::Error,
+    io::{self, prelude::*, BufReader},
+    str,
+};
 
 #[derive(Debug)]
 // Define a public struct called Config
 pub struct Config {
-    pub count_lines: bool,
-    pub count_bytes: bool,
-    pub count_runes: bool,
+    pub is_lines: bool,
+    pub is_bytes: bool,
+    pub is_runes: bool,
 }
 
 // Create a Result to represent an Ok value for any type T or some Err value that implements the Error trait
@@ -24,49 +25,54 @@ pub fn get_args() -> MainResult<Config> {
         .get_matches();
 
     Ok(Config {
-        count_lines: matches.contains_id("lines"),
-        count_bytes: matches.contains_id("bytes"),
-        count_runes: matches.contains_id("runes"),
+        is_lines: matches.contains_id("lines"),
+        is_bytes: matches.contains_id("bytes"),
+        is_runes: matches.contains_id("runes"),
     })
 }
 
-fn count_lines<R: Read>(reader: &mut R) -> usize {
+fn count_lines<R: Read>(reader: &mut R) -> Result<usize, Box<dyn Error>> {
     let reader = BufReader::new(reader);
-    reader.lines().count()
+    Ok(reader.lines().count())
 }
 
-fn count_bytes<R: Read>(reader: &mut R) -> usize {
-    reader.bytes().count()
+fn count_bytes<R: Read>(reader: &mut R) -> Result<usize, Box<dyn Error>> {
+    Ok(reader.bytes().count())
 }
 
-fn count_runes<R: Read>(reader: &mut R) -> usize {
+fn count_runes<R: Read>(reader: &mut R) -> Result<usize, str::Utf8Error> {
     let mut count = 0;
     let mut buffer = [0; 1024];
     while let Ok(n) = reader.read(&mut buffer) {
         if n == 0 {
             break;
         }
-        let s = str::from_utf8(&buffer[..n]).unwrap();
+        let s = str::from_utf8(&buffer[..n])?;
         count += s.chars().count();
     }
-    count
+    Ok(count)
 }
 
-pub fn count_words<R: Read>(reader: &mut R) -> usize {
+pub fn count_words<R: Read>(reader: &mut R) -> Result<usize, Box<dyn Error>> {
     let mut buffer = String::with_capacity(1024);
-    reader.read_to_string(&mut buffer).unwrap();
-    // matches any sequence of characters surrounded by word boundaries
-    let re = Regex::new(r"\b\S+\b").unwrap();
-    re.find_iter(&buffer).count()
+    reader.read_to_string(&mut buffer)?;
+    let re = Regex::new(r"\b\S+\b")?;
+    Ok(re.find_iter(&buffer).count())
 }
 
-pub fn count<R: Read>(reader: &mut R, config: Config) -> usize {
-    match (config.count_lines, config.count_bytes, config.count_runes) {
-        (true, false, false) => count_lines(reader),
-        (false, true, false) => count_bytes(reader),
-        (false, false, true) => count_runes(reader),
-        (false, false, false) => count_words(reader),
-        _ => panic!("Invalid combination of flags"),
+pub fn count<R: Read>(reader: &mut R, config: Config) -> Result<usize, Box<dyn Error>> {
+    let Config {
+        is_lines,
+        is_bytes,
+        is_runes,
+    } = config;
+
+    match (is_lines, is_bytes, is_runes) {
+        (true, false, false) => Ok(count_lines(reader)?),
+        (false, true, false) => Ok(count_bytes(reader)?),
+        (false, false, true) => Ok(count_runes(reader)?),
+        (false, false, false) => Ok(count_words(reader)?),
+        _ => Err(From::from("Invalid combination of flags")),
     }
 }
 
@@ -76,7 +82,7 @@ pub fn run(config: Config) -> MainResult<()> {
     let mut reader = stdin.lock();
 
     // Count the number of lines, bytes, runes, or words in the input
-    let count = count(&mut reader, config);
+    let count = count(&mut reader, config)?;
 
     // Print the final count value
     println!("{}", count);
