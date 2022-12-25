@@ -62,7 +62,7 @@ fn test_count_runes() {
 
 #[test]
 fn test_count_words() {
-    let input = " hello world how are you";
+    let input = "hello world how are you";
     let expected = 5;
     let config = word_counter::Config {
         count_lines: false,
