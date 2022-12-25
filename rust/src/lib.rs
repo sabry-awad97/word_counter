@@ -51,10 +51,10 @@ fn count_runes<R: Read>(reader: &mut R) -> usize {
 }
 
 pub fn count_words<R: Read>(reader: &mut R) -> usize {
-    let mut buffer = String::new();
+    let mut buffer = String::with_capacity(1024);
     reader.read_to_string(&mut buffer).unwrap();
     let re = Regex::new(r"\b\w+\b").unwrap();
-    re.find_iter(&buffer).count()
+    re.find_iter(&buffer).skip_while(|m| m.start() == 0).count()
 }
 
 pub fn count<R: Read>(reader: &mut R, config: Config) -> usize {
