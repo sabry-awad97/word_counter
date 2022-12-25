@@ -54,7 +54,9 @@ pub fn count_words<R: Read>(reader: &mut R) -> usize {
     let mut buffer = String::with_capacity(1024);
     reader.read_to_string(&mut buffer).unwrap();
     let re = Regex::new(r"\b\w+\b").unwrap();
-    re.find_iter(&buffer).skip_while(|m| m.start() == 0).count()
+    re.find_iter(&buffer)
+        .skip_while(|m| m.start() == 0 && m.as_str().starts_with(' '))
+        .count()
 }
 
 pub fn count<R: Read>(reader: &mut R, config: Config) -> usize {
